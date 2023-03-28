@@ -1,0 +1,12 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "automerge": true,
+
+  "lockFileMaintenance": {
+    "enabled": true,
+  },
+
+  "schedule": ["after 6am on monday"],
+}
