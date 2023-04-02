@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "structlog-google-cloud-logging"
+name = "structlog-gcp"
 description = 'A structlog set of processors to output as Google Cloud Logging format'
 readme = "README.md"
 requires-python = ">=3.7"
@@ -15,42 +15,58 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = []
+dependencies = [
+  "structlog",
+]
 dynamic = ["version"]
 
 [project.urls]
-Documentation = "https://github.com/multani/structlog-google-cloud-logging#readme"
-Issues = "https://github.com/multani/structlog-google-cloud-logging/issues"
-Source = "https://github.com/multani/structlog-google-cloud-logging"
+Documentation = "https://github.com/multani/structlog-gcp#readme"
+Issues = "https://github.com/multani/structlog-gcp/issues"
+Source = "https://github.com/multani/structlog-gcp"
 
 [tool.hatch.version]
-path = "src/structlog_google_cloud_logging/__about__.py"
+path = "structlog_gcp/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
+  "black",
+  "isort",
   "pytest",
   "pytest-cov",
+  "flake8",
 ]
-[tool.hatch.envs.default.scripts]
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=structlog_google_cloud_logging --cov=tests {args}"
-no-cov = "cov --no-cov {args}"
 
-[[tool.hatch.envs.test.matrix]]
-python = ["37", "38", "39", "310", "311"]
+[tool.hatch.envs.default.scripts]
+test = "pytest"
+
+[[tool.hatch.envs.default.matrix]]
+python = ["39", "310", "311"]
+
+[tool.pytest.ini_options]
+addopts = [
+  "--doctest-modules",
+  "--cov", "structlog_gcp",
+  "--cov-branch",
+  "--cov-report", "html",
+  "--cov-report", "term",
+  "--tb", "short",
+  "--verbose",
+  "--verbose",
+]
+testpaths = "tests"
 
 [tool.coverage.run]
 branch = true
 parallel = true
 omit = [
-  "structlog_google_cloud_logging/__about__.py",
+  "structlog_gcp/__about__.py",
 ]
 
 [tool.coverage.report]
@@ -59,3 +75,6 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+
+[tool.isort]
+profile = "black"
