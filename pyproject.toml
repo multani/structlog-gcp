@@ -46,9 +46,6 @@ dependencies = [
 [tool.hatch.envs.default.scripts]
 test = "pytest"
 
-[[tool.hatch.envs.default.matrix]]
-python = ["39", "310", "311"]
-
 [tool.pytest.ini_options]
 addopts = [
   "--doctest-modules",

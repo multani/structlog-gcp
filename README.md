@@ -68,10 +68,10 @@ if not converted:
 Check out the [`examples` folder](tree/main/examples) to see how it can be used.
 
 * How it should appear in the Google Cloud Logging log explorer:
-  ![](./docs/logs.png)
+  ![](https://raw.githubusercontent.com/multani/structlog-gcp/main/docs/logs.pn)
 
 * How it should appear in the Google Cloud Error Reporting dashboard:
-  ![](./docs/errors.png)
+  ![](https://raw.githubusercontent.com/multani/structlog-gcp/docs/errors.png)
 
 
 ## Reference
