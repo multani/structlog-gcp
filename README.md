@@ -1,4 +1,4 @@
-# Google Cloud Logging formatter for structlog
+# Google Cloud Logging formatter for `structlog`
 
 This is an opiniated package that configures [structlog](https://structlog.org/)
 to output log compatible with the [Google Cloud Logging log
@@ -63,6 +63,15 @@ if not converted:
     logger.critical("This is not supposed to happen", converted=converted)
 ```
 
+## Examples
+
+Check out the [`examples` folder](tree/main/examples) to see how it can be used.
+
+* How it should appear in the Google Cloud Logging log explorer:
+  ![](./docs/logs.png)
+
+* How it should appear in the Google Cloud Error Reporting dashboard:
+  ![](./docs/errors.png)
 
 
 ## Reference
