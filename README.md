@@ -6,7 +6,8 @@ format](https://cloud.google.com/logging/docs/structured-logging).
 
 The intention of this package is to be used for applications that run in [Google
 Kubernetes Engine (GKE)](https://cloud.google.com/kubernetes-engine/) or [Google
-Cloud Function](https://cloud.google.com/functions/).
+Cloud Function](https://cloud.google.com/functions/), or any other systems that
+know how to send logs to Google Cloud.
 
 As such, the package is only concerned about **formatting logs**, where logs are
 expected to be written on the standard output. Sending the logs to the actual
