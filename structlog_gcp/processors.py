@@ -3,8 +3,8 @@
 # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
 
-from structlog.typing import EventDict, Processor, WrappedLogger
 import structlog.processors
+from structlog.typing import EventDict, Processor, WrappedLogger
 
 from .types import CLOUD_LOGGING_KEY, SOURCE_LOCATION_KEY
 
