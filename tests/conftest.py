@@ -22,8 +22,8 @@ def logger():
             "structlog.processors.format_exc_info", side_effect=fakes.format_exc_info
         ),
     ):
-        gcp_logs = structlog_gcp.StructlogGCP()
-        structlog.configure(processors=gcp_logs.build_processors())
+        processors = structlog_gcp.build_processors()
+        structlog.configure(processors=processors)
         logger = structlog.get_logger()
         yield logger
 
