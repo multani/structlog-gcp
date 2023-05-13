@@ -65,15 +65,15 @@ class ReportException:
 
 
 class ReportError:
-    """Report to Google Cloud Error Reporting specific log severities"""
+    """Report to Google Cloud Error Reporting specific log severities
+
+    This class assumes the :ref:`.processors.CodeLocation` processor ran before.
+    """
 
     # https://cloud.google.com/error-reporting/reference/rest/v1beta1/projects.events/report
     # https://cloud.google.com/error-reporting/docs/formatting-error-messages#log-entry-examples
 
-    def __init__(self, severities: list[str] | None = None) -> None:
-        if severities is None:
-            severities = []
-
+    def __init__(self, severities: list[str]) -> None:
         self.severities = severities
 
     def setup(self) -> list[Processor]:
@@ -97,17 +97,13 @@ class ReportError:
         if severity not in self.severities:
             return event_dict
 
+        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ErrorContext
+        error_context = {
+            "reportLocation": event_dict[CLOUD_LOGGING_KEY][SOURCE_LOCATION_KEY],
+        }
+
         event_dict[CLOUD_LOGGING_KEY]["@type"] = ERROR_EVENT_TYPE
-
-        if SOURCE_LOCATION_KEY in event_dict[CLOUD_LOGGING_KEY]:
-            # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ErrorContext
-            error_context = {
-                "reportLocation": event_dict[CLOUD_LOGGING_KEY][SOURCE_LOCATION_KEY],
-            }
-            event_dict[CLOUD_LOGGING_KEY]["context"] = error_context
-        else:
-            event_dict[CLOUD_LOGGING_KEY]["context"] = "no location :("
-
+        event_dict[CLOUD_LOGGING_KEY]["context"] = error_context
         event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self._build_service_context()
 
         return event_dict
