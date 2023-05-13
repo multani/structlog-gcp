@@ -41,9 +41,8 @@ provides:
 import structlog
 import structlog_gcp
 
-gcp_logs = structlog_gcp.StructlogGCP()
-
-structlog.configure(processors=gcp_logs.build_processors())
+processors = structlog_gcp.build_processors()
+structlog.configure(processors=processors)
 ```
 
 Then, you can use `structlog` as usual:
