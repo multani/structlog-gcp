@@ -2,6 +2,8 @@
 # https://cloud.google.com/logging/docs/agent/logging/configuration#process-payload
 # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
+
+from structlog.typing import EventDict, Processor, WrappedLogger
 import structlog.processors
 
 from .types import CLOUD_LOGGING_KEY, SOURCE_LOCATION_KEY
@@ -10,7 +12,7 @@ from .types import CLOUD_LOGGING_KEY, SOURCE_LOCATION_KEY
 class CoreCloudLogging:
     """Initialize the Google Cloud Logging event message"""
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         return [
             # If some value is in bytes, decode it to a unicode str.
             structlog.processors.UnicodeDecoder(),
@@ -19,7 +21,9 @@ class CoreCloudLogging:
             self.__call__,
         ]
 
-    def __call__(self, logger, method_name, event_dict):
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
         value = {
             "message": event_dict.pop("event"),
             "time": event_dict.pop("timestamp"),
@@ -32,14 +36,16 @@ class CoreCloudLogging:
 class FormatAsCloudLogging:
     """Finalize the Google Cloud Logging event message and replace the logging event"""
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         return [
             self.__call__,
             structlog.processors.JSONRenderer(),
         ]
 
-    def __call__(self, logger, method_name, event_dict):
-        event = event_dict.pop(CLOUD_LOGGING_KEY)
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
+        event: EventDict = event_dict.pop(CLOUD_LOGGING_KEY)
 
         if event_dict:
             event["logging.googleapis.com/labels"] = event_dict
@@ -50,7 +56,7 @@ class FormatAsCloudLogging:
 class LogSeverity:
     """Set the severity using the Google Cloud Logging severities"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.default = "notset"
 
         # From Python's logging level to Google level
@@ -67,14 +73,16 @@ class LogSeverity:
             # "emergency": "EMERGENCY", #	One or more systems are unusable.
         }
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         return [
             # Add log level to event dict.
             structlog.processors.add_log_level,
             self.__call__,
         ]
 
-    def __call__(self, logger, method_name, event_dict):
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
         """Format a Python log level value as a GCP log severity.
 
         See: https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity
@@ -90,7 +98,7 @@ class LogSeverity:
 class CodeLocation:
     """Inject the location of the logging message into the logs"""
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         # Add callsite parameters.
         call_site_proc = structlog.processors.CallsiteParameterAdder(
             parameters=[
@@ -102,7 +110,9 @@ class CodeLocation:
         )
         return [call_site_proc, self.__call__]
 
-    def __call__(self, logger, method_name, event_dict):
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
         location = {
             "file": event_dict.pop("pathname"),
             "line": str(event_dict.pop("lineno")),

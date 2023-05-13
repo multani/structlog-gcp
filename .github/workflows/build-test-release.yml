@@ -1,10 +1,6 @@
 name: Build & maybe upload PyPI package
 
 on:
-  push:
-    branches:
-      - main
-
   pull_request:
     branches:
       - main
@@ -37,6 +33,18 @@ jobs:
 
       - name: Test
         run: hatch run pytest --color=yes
+
+      - name: mypy
+        run: hatch run mypy structlog-gcp
+
+      - name: flake8
+        run: hatch run flake8 structlog-gcp
+
+      - name: black
+        run: hatch run black --check --diff structlog-gcp
+
+      - name: isort
+        run: hatch run isort --check --diff structlog-gcp
 
       - name: Build
         run: hatch build --clean

@@ -75,3 +75,7 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
+
+
+[tool.mypy]
+strict = true
