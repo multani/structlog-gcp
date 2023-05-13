@@ -40,11 +40,7 @@ class ReportException:
         self.log_level = log_level
 
     def setup(self) -> list[Processor]:
-        return [
-            # structlog.processors.ExceptionRenderer(self.format_exception),
-            structlog.processors.format_exc_info,
-            self.__call__,
-        ]
+        return [structlog.processors.format_exc_info, self]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -77,7 +73,7 @@ class ReportError:
         self.severities = severities
 
     def setup(self) -> list[Processor]:
-        return [self.__call__]
+        return [self]
 
     def _build_service_context(self) -> dict[str, str]:
         # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext

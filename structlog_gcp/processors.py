@@ -18,7 +18,7 @@ class CoreCloudLogging:
             structlog.processors.UnicodeDecoder(),
             # Add a timestamp in ISO 8601 format.
             structlog.processors.TimeStamper(fmt="iso"),
-            self.__call__,
+            self,
         ]
 
     def __call__(
@@ -37,10 +37,7 @@ class FormatAsCloudLogging:
     """Finalize the Google Cloud Logging event message and replace the logging event"""
 
     def setup(self) -> list[Processor]:
-        return [
-            self.__call__,
-            structlog.processors.JSONRenderer(),
-        ]
+        return [self, structlog.processors.JSONRenderer()]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -74,11 +71,8 @@ class LogSeverity:
         }
 
     def setup(self) -> list[Processor]:
-        return [
-            # Add log level to event dict.
-            structlog.processors.add_log_level,
-            self.__call__,
-        ]
+        # Add log level to event dict.
+        return [structlog.processors.add_log_level, self]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -108,7 +102,7 @@ class CodeLocation:
                 structlog.processors.CallsiteParameter.LINENO,
             ]
         )
-        return [call_site_proc, self.__call__]
+        return [call_site_proc, self]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
