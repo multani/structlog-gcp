@@ -1,10 +1,6 @@
 name: Build & maybe upload PyPI package
 
 on:
-  push:
-    branches:
-      - main
-
   pull_request:
     branches:
       - main
@@ -27,16 +23,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Poetry
-        run: pipx install hatch
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
+      - name: Setup Hatch
+        run: pipx install hatch
+
       - name: Test
         run: hatch run pytest --color=yes
+
+      - name: mypy
+        run: hatch run mypy structlog_gcp
+
+      - name: flake8
+        run: hatch run flake8 structlog_gcp
+
+      - name: black
+        run: hatch run black --check --diff structlog_gcp
+
+      - name: isort
+        run: hatch run isort --check --diff structlog_gcp
 
       - name: Build
         run: hatch build --clean

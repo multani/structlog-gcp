@@ -1,11 +1,14 @@
 import os
 
 import structlog
+from structlog.typing import EventDict, Processor, WrappedLogger
 
 from .types import CLOUD_LOGGING_KEY, ERROR_EVENT_TYPE, SOURCE_LOCATION_KEY
 
 
-def add_service_context(logger, method_name, event_dict):
+def add_service_context(
+    logger: WrappedLogger, method_name: str, event_dict: EventDict
+) -> EventDict:
     """Add a service context in which an error has occurred.
 
     This is part of the Error Reporting API, so it's only added when an error happens.
@@ -33,17 +36,19 @@ class ReportException:
     # https://cloud.google.com/error-reporting/reference/rest/v1beta1/projects.events/report
     # https://cloud.google.com/error-reporting/docs/formatting-error-messages#log-entry-examples
 
-    def __init__(self, log_level="CRITICAL"):
+    def __init__(self, log_level: str = "CRITICAL") -> None:
         self.log_level = log_level
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         return [
             # structlog.processors.ExceptionRenderer(self.format_exception),
             structlog.processors.format_exc_info,
             self.__call__,
         ]
 
-    def __call__(self, logger, method_name, event_dict):
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
         exception = event_dict.pop("exception", None)
         if exception is None:
             return event_dict
@@ -60,23 +65,21 @@ class ReportException:
 
 
 class ReportError:
-    """Report to Google Cloud Error Reporting specific log severities"""
+    """Report to Google Cloud Error Reporting specific log severities
+
+    This class assumes the :ref:`.processors.CodeLocation` processor ran before.
+    """
 
     # https://cloud.google.com/error-reporting/reference/rest/v1beta1/projects.events/report
     # https://cloud.google.com/error-reporting/docs/formatting-error-messages#log-entry-examples
 
-    def __init__(self, severities=None):
-        if severities is None:
-            severities = []
-
+    def __init__(self, severities: list[str]) -> None:
         self.severities = severities
 
-    def setup(self):
+    def setup(self) -> list[Processor]:
         return [self.__call__]
 
-    def _build_service_context(self):
-        import os
-
+    def _build_service_context(self) -> dict[str, str]:
         # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
         service_context = {
             # https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically
@@ -86,23 +89,21 @@ class ReportError:
 
         return service_context
 
-    def __call__(self, logger, method_name, event_dict):
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
         severity = event_dict[CLOUD_LOGGING_KEY]["severity"]
 
         if severity not in self.severities:
             return event_dict
 
+        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ErrorContext
+        error_context = {
+            "reportLocation": event_dict[CLOUD_LOGGING_KEY][SOURCE_LOCATION_KEY],
+        }
+
         event_dict[CLOUD_LOGGING_KEY]["@type"] = ERROR_EVENT_TYPE
-
-        if SOURCE_LOCATION_KEY in event_dict[CLOUD_LOGGING_KEY]:
-            # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ErrorContext
-            error_context = {
-                "reportLocation": event_dict[CLOUD_LOGGING_KEY][SOURCE_LOCATION_KEY],
-            }
-            event_dict[CLOUD_LOGGING_KEY]["context"] = error_context
-        else:
-            event_dict[CLOUD_LOGGING_KEY]["context"] = "no location :("
-
+        event_dict[CLOUD_LOGGING_KEY]["context"] = error_context
         event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self._build_service_context()
 
         return event_dict

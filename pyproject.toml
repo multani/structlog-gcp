@@ -37,10 +37,11 @@ path = "structlog_gcp/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "black",
+  "flake8",
   "isort",
+  "mypy",
   "pytest",
   "pytest-cov",
-  "flake8",
 ]
 
 [tool.hatch.envs.default.scripts]
@@ -75,3 +76,6 @@ exclude_lines = [
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+strict = true

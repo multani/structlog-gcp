@@ -1,11 +1,13 @@
+from structlog.typing import Processor
+
 from . import errors, processors
 
 
 class StructlogGCP:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def build_processors(self):
+    def build_processors(self) -> list[Processor]:
         procs = []
 
         procs.extend(processors.CoreCloudLogging().setup())
