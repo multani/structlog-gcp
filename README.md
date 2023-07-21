@@ -65,13 +65,13 @@ if not converted:
 
 ## Examples
 
-Check out the [`examples` folder](tree/main/examples) to see how it can be used.
+Check out the [`examples` folder](https://github.com/multani/structlog-gcp/tree/main/examples) to see how it can be used.
 
 * How it should appear in the Google Cloud Logging log explorer:
-  ![](https://raw.githubusercontent.com/multani/structlog-gcp/main/docs/logs.pn)
+  ![](https://raw.githubusercontent.com/multani/structlog-gcp/main/docs/logs.png)
 
 * How it should appear in the Google Cloud Error Reporting dashboard:
-  ![](https://raw.githubusercontent.com/multani/structlog-gcp/docs/errors.png)
+  ![](https://raw.githubusercontent.com/multani/structlog-gcp/main/docs/errors.png)
 
 
 ## Reference
