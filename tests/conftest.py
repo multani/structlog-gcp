@@ -9,9 +9,7 @@ from . import fakes
 
 
 @pytest.fixture
-def logger():
-    """Setup a logger for testing and return it"""
-
+def mock_logger_env():
     with (
         patch(
             "structlog.processors.CallsiteParameterAdder",
@@ -22,9 +20,17 @@ def logger():
             "structlog.processors.format_exc_info", side_effect=fakes.format_exc_info
         ),
     ):
-        processors = structlog_gcp.build_processors()
-        structlog.configure(processors=processors)
-        logger = structlog.get_logger()
-        yield logger
+        yield
+
+@pytest.fixture
+def logger(mock_logger_env):
+    """Setup a logger for testing and return it"""
+
+    structlog.reset_defaults()
+
+    processors = structlog_gcp.build_processors()
+    structlog.configure(processors=processors)
+    logger = structlog.get_logger()
+    yield logger
 
     structlog.reset_defaults()

@@ -16,13 +16,10 @@ Google Logging API is supposed to be done by an external agent.
 
 In particular, this package provides the following configuration by default:
 
-* Logs are formatted as JSON using the [Google Cloud Logging log
-  format](https://cloud.google.com/logging/docs/structured-logging)
-* The [Python standard library's
-  `logging`](https://docs.python.org/3/library/logging.html) log levels are
-  available and translated to their GCP equivalents.
-* Exceptions and `CRITICAL` log messages will be reported into [Google Error
-  Reporting dashboard](https://cloud.google.com/error-reporting/)
+* Logs are formatted as JSON using the [Google Cloud Logging log format](https://cloud.google.com/logging/docs/structured-logging)
+* The [Python standard library's `logging`](https://docs.python.org/3/library/logging.html)
+  log levels are available and translated to their GCP equivalents.
+* Exceptions and `CRITICAL` log messages will be reported into [Google Error Reporting dashboard](https://cloud.google.com/error-reporting/)
 * Additional logger bound arguments will be reported as `labels` in GCP.
 
 
@@ -62,6 +59,27 @@ except:
 if not converted:
     logger.critical("This is not supposed to happen", converted=converted)
 ```
+
+### Errors
+
+Errors are automatically reported to the [Google Error Reporting service](https://cloud.google.com/error-reporting/).
+
+You can configure the service name and the version used during the report with 2 different ways:
+
+* By default, the library assumes to run with Cloud Function environment
+  variables configured, in particular [the `K_SERVICE` and `K_REVISION` variables](https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically).
+* You can also pass the service name and revision at configuration time with:
+
+  ```python
+  import structlog
+  import structlog_gcp
+
+  processors = structlog_gcp.build_processors(
+      service="my-service",
+      version="v1.2.3",
+  )
+  structlog.configure(processors=processors)
+  ```
 
 ## Examples
 

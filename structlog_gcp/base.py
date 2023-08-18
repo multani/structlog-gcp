@@ -3,7 +3,10 @@ from structlog.typing import Processor
 from . import errors, processors
 
 
-def build_processors() -> list[Processor]:
+def build_processors(
+    service: str | None = None,
+    version: str | None = None,
+) -> list[Processor]:
     procs = []
 
     procs.extend(processors.CoreCloudLogging().setup())
@@ -11,7 +14,7 @@ def build_processors() -> list[Processor]:
     procs.extend(processors.CodeLocation().setup())
     procs.extend(errors.ReportException().setup())
     procs.extend(errors.ReportError(["CRITICAL"]).setup())
-    procs.append(errors.add_service_context)
+    procs.extend(errors.ServiceContext(service, version).setup())
     procs.extend(processors.FormatAsCloudLogging().setup())
 
     return procs

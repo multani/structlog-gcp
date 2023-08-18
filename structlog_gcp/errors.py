@@ -6,28 +6,36 @@ from structlog.typing import EventDict, Processor, WrappedLogger
 from .types import CLOUD_LOGGING_KEY, ERROR_EVENT_TYPE, SOURCE_LOCATION_KEY
 
 
-def add_service_context(
-    logger: WrappedLogger, method_name: str, event_dict: EventDict
-) -> EventDict:
-    """Add a service context in which an error has occurred.
-
-    This is part of the Error Reporting API, so it's only added when an error happens.
-    """
-
-    event_type = event_dict[CLOUD_LOGGING_KEY].get("@type")
-    if event_type != ERROR_EVENT_TYPE:
-        return event_dict
-
-    service_context = {
+class ServiceContext:
+    def __init__(self, service: str | None = None, version: str | None = None) -> None:
         # https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically
-        "service": os.environ.get("K_SERVICE", "unknown service"),
-        "version": os.environ.get("K_REVISION", "unknown version"),
-    }
+        if service is None:
+            service = os.environ.get("K_SERVICE", "unknown service")
 
-    # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
-    event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = service_context
+        if version is None:
+            version = os.environ.get("K_REVISION", "unknown version")
 
-    return event_dict
+        self.service_context = {"service": service, "version": version}
+
+    def setup(self) -> list[Processor]:
+        return [self]
+
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
+        """Add a service context in which an error has occurred.
+
+        This is part of the Error Reporting API, so it's only added when an error happens.
+        """
+
+        event_type = event_dict[CLOUD_LOGGING_KEY].get("@type")
+        if event_type != ERROR_EVENT_TYPE:
+            return event_dict
+
+        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
+        event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self.service_context
+
+        return event_dict
 
 
 class ReportException:
