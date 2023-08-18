@@ -37,7 +37,7 @@ path = "structlog_gcp/__about__.py"
 [tool.hatch.envs.default]
 dependencies = [
   "black",
-  "flake8",
+  "ruff",
   "isort",
   "mypy",
   "pytest",
@@ -79,3 +79,8 @@ profile = "black"
 
 [tool.mypy]
 strict = true
+
+[tool.ruff]
+ignore = [
+  "E501",
+]

@@ -37,8 +37,8 @@ jobs:
       - name: mypy
         run: hatch run mypy structlog_gcp
 
-      - name: flake8
-        run: hatch run flake8 structlog_gcp
+      - name: ruff
+        run: hatch run ruff check structlog_gcp
 
       - name: black
         run: hatch run black --check --diff structlog_gcp
