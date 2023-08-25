@@ -1,3 +1,4 @@
+import datetime
 import json
 from unittest.mock import patch
 
@@ -119,3 +120,37 @@ def test_service_context_custom(capsys, mock_logger_env):
         "service": "my-service",
         "version": "deadbeef",
     }
+
+
+def test_labels_string(capsys, logger):
+    logger.info(
+        "test",
+        test1="test1",
+        test2=2,
+        test3={"foo": "bar"},
+        test4={"date": datetime.date(2023, 1, 1)},
+    )
+
+    output = capsys.readouterr()
+
+    assert "" == output.err
+
+    msg = json.loads(output.out)
+
+    expected = {
+        "logging.googleapis.com/sourceLocation": {
+            "file": "/app/test.py",
+            "function": "test:test123",
+            "line": "42",
+        },
+        "message": "test",
+        "severity": "INFO",
+        "time": "2023-04-01T08:00:00.000000Z",
+        "logging.googleapis.com/labels": {
+            "test1": "test1",
+            "test2": "2",
+            "test3": '{"foo": "bar"}',
+            "test4": '{"date": "datetime.date(2023, 1, 1)"}',
+        },
+    }
+    assert expected == msg
