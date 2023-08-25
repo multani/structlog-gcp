@@ -3,6 +3,9 @@
 # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
 
+import json
+from typing import Any
+
 import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
@@ -36,8 +39,17 @@ class CoreCloudLogging:
 class FormatAsCloudLogging:
     """Finalize the Google Cloud Logging event message and replace the logging event"""
 
+    def __init__(self) -> None:
+        self.renderer = structlog.processors.JSONRenderer()
+        self.label = "logging.googleapis.com/labels"
+
     def setup(self) -> list[Processor]:
         return [self, structlog.processors.JSONRenderer()]
+
+    def _serialize(self, value: Any) -> str:
+        if isinstance(value, str):
+            return value
+        return json.dumps(value, default=repr)
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -45,7 +57,11 @@ class FormatAsCloudLogging:
         event: EventDict = event_dict.pop(CLOUD_LOGGING_KEY)
 
         if event_dict:
-            event["logging.googleapis.com/labels"] = event_dict
+            event[self.label] = {}
+
+            for key, item in event_dict.items():
+                value = self._serialize(item)
+                event[self.label][key] = value
 
         return event
 
