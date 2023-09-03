@@ -51,7 +51,7 @@ def test_error(stdout, logger):
             "service": "unknown service",
             "version": "unknown version",
         },
-        "logging.googleapis.com/labels": {"foo": "bar"},
+        "foo": "bar",
         "severity": "CRITICAL",
         "message": "oh noes",
         "stack_trace": "oh noes\nTraceback blabla",
@@ -114,13 +114,14 @@ def test_service_context_custom(stdout, mock_logger_env):
     }
 
 
-def test_labels_string(stdout, logger):
+def test_extra_labels(stdout, logger):
     logger.info(
         "test",
         test1="test1",
         test2=2,
-        test3={"foo": "bar"},
-        test4={"date": datetime.date(2023, 1, 1)},
+        test3=False,
+        test4={"foo": "bar"},
+        test5={"date": datetime.date(2023, 1, 1)},
     )
 
     msg = json.loads(stdout())
@@ -131,14 +132,16 @@ def test_labels_string(stdout, logger):
             "function": "test:test123",
             "line": "42",
         },
-        "message": "test",
         "severity": "INFO",
         "time": "2023-04-01T08:00:00.000000Z",
-        "logging.googleapis.com/labels": {
-            "test1": "test1",
-            "test2": "2",
-            "test3": '{"foo": "bar"}',
-            "test4": '{"date": "datetime.date(2023, 1, 1)"}',
-        },
+        "message": "test",
+
+        # This should be parsed automatically by Cloud Logging into dedicated keys and saved into a JSON payload.
+        # See: https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
+        "test1": "test1",
+        "test2": 2,
+        "test3": False,
+        "test4": {"foo": "bar"},
+        "test5": {"date": "datetime.date(2023, 1, 1)"},
     }
     assert expected == msg
