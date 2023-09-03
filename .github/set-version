@@ -17,7 +17,7 @@ def github_ref_type(value: str) -> str:
 
 def write_about_file(file: io.TextIOWrapper, git_ref: str) -> None:
     tag = git_ref[len(GIT_REF_PREFIX) :]
-    value = f'__version__ = "{tag}"\n'
+    value = f'__version__ = "{tag}"'
     print(value, file=file)
     return tag
 
