@@ -7,14 +7,10 @@ import structlog
 import structlog_gcp
 
 
-def test_normal(capsys, logger):
+def test_normal(stdout, logger):
     logger.info("test")
 
-    output = capsys.readouterr()
-
-    assert "" == output.err
-
-    msg = json.loads(output.out)
+    msg = json.loads(stdout())
 
     expected = {
         "logging.googleapis.com/sourceLocation": {
@@ -29,17 +25,13 @@ def test_normal(capsys, logger):
     assert expected == msg
 
 
-def test_error(capsys, logger):
+def test_error(stdout, logger):
     try:
         1 / 0
     except ZeroDivisionError:
         logger.exception("oh noes", foo="bar")
 
-    output = capsys.readouterr()
-
-    assert "" == output.err
-
-    msg = json.loads(output.out)
+    msg = json.loads(stdout())
 
     expected = {
         "@type": "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent",
@@ -68,13 +60,13 @@ def test_error(capsys, logger):
     assert expected == msg
 
 
-def test_service_context_default(capsys, logger):
+def test_service_context_default(stdout, logger):
     try:
         1 / 0
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(capsys.readouterr().out)
+    msg = json.loads(stdout())
 
     assert msg["serviceContext"] == {
         "service": "unknown service",
@@ -83,7 +75,7 @@ def test_service_context_default(capsys, logger):
 
 
 @patch.dict("os.environ", {"K_SERVICE": "test-service", "K_REVISION": "test-version"})
-def test_service_context_envvar(capsys, mock_logger_env):
+def test_service_context_envvar(stdout, mock_logger_env):
     processors = structlog_gcp.build_processors()
     structlog.configure(processors=processors)
     logger = structlog.get_logger()
@@ -93,7 +85,7 @@ def test_service_context_envvar(capsys, mock_logger_env):
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(capsys.readouterr().out)
+    msg = json.loads(stdout())
 
     assert msg["serviceContext"] == {
         "service": "test-service",
@@ -101,7 +93,7 @@ def test_service_context_envvar(capsys, mock_logger_env):
     }
 
 
-def test_service_context_custom(capsys, mock_logger_env):
+def test_service_context_custom(stdout, mock_logger_env):
     processors = structlog_gcp.build_processors(
         service="my-service",
         version="deadbeef",
@@ -114,7 +106,7 @@ def test_service_context_custom(capsys, mock_logger_env):
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(capsys.readouterr().out)
+    msg = json.loads(stdout())
 
     assert msg["serviceContext"] == {
         "service": "my-service",
@@ -122,7 +114,7 @@ def test_service_context_custom(capsys, mock_logger_env):
     }
 
 
-def test_labels_string(capsys, logger):
+def test_labels_string(stdout, logger):
     logger.info(
         "test",
         test1="test1",
@@ -131,11 +123,7 @@ def test_labels_string(capsys, logger):
         test4={"date": datetime.date(2023, 1, 1)},
     )
 
-    output = capsys.readouterr()
-
-    assert "" == output.err
-
-    msg = json.loads(output.out)
+    msg = json.loads(stdout())
 
     expected = {
         "logging.googleapis.com/sourceLocation": {

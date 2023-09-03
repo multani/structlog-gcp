@@ -34,3 +34,13 @@ def logger(mock_logger_env):
     yield logger
 
     structlog.reset_defaults()
+
+
+@pytest.fixture
+def stdout(capsys):
+    def read():
+        output = capsys.readouterr()
+        assert "" == output.err
+        return output.out
+
+    yield read
