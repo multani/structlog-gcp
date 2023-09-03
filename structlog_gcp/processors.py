@@ -3,9 +3,6 @@
 # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
 
-import json
-from typing import Any
-
 import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
@@ -37,33 +34,34 @@ class CoreCloudLogging:
 
 
 class FormatAsCloudLogging:
-    """Finalize the Google Cloud Logging event message and replace the logging event"""
+    """Finalize the Google Cloud Logging event message and replace the logging event.
 
-    def __init__(self) -> None:
-        self.renderer = structlog.processors.JSONRenderer()
-        self.label = "logging.googleapis.com/labels"
+    This is not exactly the format the Cloud Logging directly ingests, but
+    Cloud Logging is smart enough to transform basic JSON-like logging events
+    into Cloud Logging-compatible events.
+
+    See: https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
+    """
 
     def setup(self) -> list[Processor]:
         return [self, structlog.processors.JSONRenderer()]
 
-    def _serialize(self, value: Any) -> str:
-        if isinstance(value, str):
-            return value
-        return json.dumps(value, default=repr)
-
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
     ) -> EventDict:
-        event: EventDict = event_dict.pop(CLOUD_LOGGING_KEY)
+        # Take out the Google Cloud Logging set of fields from the event dict
+        gcp_event: EventDict = event_dict.pop(CLOUD_LOGGING_KEY)
 
-        if event_dict:
-            event[self.label] = {}
+        # Override whatever is left from the event dict with the content of all
+        # the Google Cloud Logging-formatted fields.
+        event_dict.update(gcp_event)
 
-            for key, item in event_dict.items():
-                value = self._serialize(item)
-                event[self.label][key] = value
+        # Fields which are not known by Google Cloud Logging will be added to
+        # the `jsonPayload` field.
+        # See the `message` field documentation in:
+        # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
-        return event
+        return event_dict
 
 
 class LogSeverity:

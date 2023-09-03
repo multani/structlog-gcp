@@ -20,7 +20,7 @@ In particular, this package provides the following configuration by default:
 * The [Python standard library's `logging`](https://docs.python.org/3/library/logging.html)
   log levels are available and translated to their GCP equivalents.
 * Exceptions and `CRITICAL` log messages will be reported into [Google Error Reporting dashboard](https://cloud.google.com/error-reporting/)
-* Additional logger bound arguments will be reported as `labels` in GCP.
+* Additional logger bound arguments will be reported into the `jsonPayload` event.
 
 
 ## How to use?
