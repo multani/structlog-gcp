@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+
+import argparse
+import io
+import os
+
+GIT_REF_PREFIX = "refs/tags/"
+
+
+def github_ref_type(value: str) -> str:
+    if not value.startswith(GIT_REF_PREFIX):
+        raise ValueError("Invalid GITHUB_REF format, expects `refs/tags/<tag name>`")
+
+    return value
+
+
+def write_about_file(file: io.TextIOWrapper, git_ref: str) -> None:
+    tag = git_ref[len(GIT_REF_PREFIX) :]
+    value = f'__version__ = "{tag}"'
+    print(value, file=file)
+    return tag
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "GITHUB_REF",
+        default=os.environ.get("GITHUB_REF"),
+        type=github_ref_type,
+        help=(
+            'The Git reference, like "refs/tags/<tag name>". '
+            "Read automatically the GITHUB_REF environment variable, if possible."
+        ),
+    )
+    parser.add_argument(
+        "-f",
+        "--filename",
+        default="structlog_gcp/__about__.py",
+        type=argparse.FileType("w"),
+        help="The file to write the version into.",
+    )
+    args = parser.parse_args()
+
+    write_about_file(args.filename, args.GITHUB_REF)
+
+
+if __name__ == "__main__":
+    main()
