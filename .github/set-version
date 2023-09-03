@@ -25,7 +25,8 @@ def write_about_file(file: io.TextIOWrapper, git_ref: str) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "GITHUB_REF",
+        "-g",
+        "--github-ref",
         default=os.environ.get("GITHUB_REF"),
         type=github_ref_type,
         help=(
@@ -42,7 +43,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    write_about_file(args.filename, args.GITHUB_REF)
+    write_about_file(args.filename, args.github_ref)
 
 
 if __name__ == "__main__":
