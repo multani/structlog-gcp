@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "structlog-gcp"
 description = 'A structlog set of processors to output as Google Cloud Logging format'
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [
