@@ -43,8 +43,8 @@ class FormatAsCloudLogging:
     See: https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
     """
 
-    def setup(self) -> list[Processor]:
-        return [self, structlog.processors.JSONRenderer()]
+    def setup(self, serializer=None) -> list[Processor]:
+        return [self, structlog.processors.JSONRenderer(serializer=serializer)]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
