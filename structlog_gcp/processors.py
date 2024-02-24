@@ -44,7 +44,7 @@ class FormatAsCloudLogging:
     """
 
     def setup(self) -> list[Processor]:
-        return [self, structlog.processors.JSONRenderer()]
+        return [self]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict

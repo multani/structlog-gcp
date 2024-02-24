@@ -1,3 +1,4 @@
+import structlog.processors
 from structlog.typing import Processor
 
 from . import errors, processors
@@ -16,5 +17,5 @@ def build_processors(
     procs.extend(errors.ReportError(["CRITICAL"]).setup())
     procs.extend(errors.ServiceContext(service, version).setup())
     procs.extend(processors.FormatAsCloudLogging().setup())
-
+    procs.append(structlog.processors.JSONRenderer())
     return procs
