@@ -58,9 +58,9 @@ jobs:
         run: make build
 
   build:
-    name: Build
+    name: Build package
     needs: check
-    #if: github.event.action == 'published'
+    if: github.event.action == 'published'
     runs-on: ubuntu-latest
 
     steps:
@@ -85,10 +85,10 @@ jobs:
           name: Packages
           path: dist/*
 
-  release:
-    name: Publish
-    runs-on: ubuntu-latest
+  publish:
+    name: Publish package
     needs: build
+    runs-on: ubuntu-latest
     environment: pypi-release
 
     permissions:
@@ -101,7 +101,5 @@ jobs:
           name: Packages
           path: dist
 
-      - name: test
-        run: find dist
-      #- name: Publish package distributions to PyPI
-        #uses: pypa/gh-action-pypi-publish@release/v1
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
