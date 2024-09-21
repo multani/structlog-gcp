@@ -22,6 +22,7 @@ def mock_logger_env():
     ):
         yield
 
+
 @pytest.fixture
 def logger(mock_logger_env):
     """Setup a logger for testing and return it"""
