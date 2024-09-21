@@ -148,3 +148,19 @@ def test_extra_labels(stdout: T_stdout, logger: WrappedLogger) -> None:
         "test5": {"date": "datetime.date(2023, 1, 1)"},
     }
     assert msg == expected
+
+
+def test_core_processors_only(stdout: T_stdout, mock_logger_env: None) -> None:
+    processors = structlog_gcp.build_gcp_processors()
+    processors.append(structlog.processors.KeyValueRenderer())
+
+    structlog.configure(processors=processors)
+    logger = structlog.get_logger()
+
+    logger.info("test")
+    msg = stdout().strip()
+
+    # No JSON formmating, no contextvars
+    expected = "message='test' time='2023-04-01T08:00:00.000000Z' severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
+
+    assert msg == expected
