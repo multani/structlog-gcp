@@ -8,17 +8,24 @@ import os
 GIT_REF_PREFIX = "refs/tags/"
 
 
-def github_ref_type(value: str) -> str:
+def github_ref_type(value: str | None) -> str:
+    if value is None:
+        raise ValueError("No GITHUB_REF environment variable")
+
     if not value.startswith(GIT_REF_PREFIX):
         raise ValueError("Invalid GITHUB_REF format, expects `refs/tags/<tag name>`")
 
     return value
 
 
-def write_about_file(file: io.TextIOWrapper, git_ref: str) -> None:
+def write_about_file(filename: str, git_ref: str) -> str:
     tag = git_ref[len(GIT_REF_PREFIX) :]
     value = f'__version__ = "{tag}"'
-    print(value, file=file)
+
+    print(f"Writing version {tag} to {filename}")
+    with open(filename, "w") as fp:
+        print(value, file=fp)
+
     return tag
 
 
@@ -28,7 +35,6 @@ def main() -> None:
         "-g",
         "--github-ref",
         default=os.environ.get("GITHUB_REF"),
-        type=github_ref_type,
         help=(
             'The Git reference, like "refs/tags/<tag name>". '
             "Read automatically the GITHUB_REF environment variable, if possible."
@@ -38,12 +44,16 @@ def main() -> None:
         "-f",
         "--filename",
         default="structlog_gcp/__about__.py",
-        type=argparse.FileType("w"),
         help="The file to write the version into.",
     )
     args = parser.parse_args()
 
-    write_about_file(args.filename, args.github_ref)
+    try:
+        github_ref = github_ref_type(args.github_ref)
+    except Exception as exc:
+        parser.error(str(exc))
+
+    write_about_file(args.filename, github_ref)
 
 
 if __name__ == "__main__":
