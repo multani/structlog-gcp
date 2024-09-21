@@ -1,3 +1,4 @@
+import structlog.contextvars
 import structlog.processors
 from structlog.typing import Processor
 
@@ -21,6 +22,7 @@ def build_processors(
 
     procs: list[Processor] = []
 
+    procs.append(structlog.contextvars.merge_contextvars)
     procs.extend(build_gcp_processors(service, version))
     procs.append(structlog.processors.JSONRenderer())
 
