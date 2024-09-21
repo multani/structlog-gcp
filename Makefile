@@ -2,13 +2,17 @@ all: fmt mypy test
 
 .PHONY: mypy
 mypy:
-	hatch run mypy
+	uv run mypy
 
 .PHONY: fmt
 fmt:
-	hatch run ruff format
-	hatch run ruff check --fix
+	uv run ruff format
+	uv run ruff check --fix
 
 .PHONY: test
 test:
-	hatch run test
+	uv run pytest
+
+.PHONY: build
+build:
+	uv run python -m build --installer=uv

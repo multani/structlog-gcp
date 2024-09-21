@@ -24,34 +24,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-
-      - name: Setup Hatch
-        run: pipx install hatch
+          enable-cache: true
 
       - name: Configure version
         if: github.event.action == 'published'
         run: ./.github/set-version
 
       - name: Test
-        run: hatch run pytest --color=yes
+        run: make test
 
       - name: mypy
-        run: hatch run mypy
+        run: make mypy
 
       - name: lint
-        run: hatch run ruff check
+        run: uv run ruff check
 
       - name: format
-        run: hatch run ruff format --diff
+        run: uv run ruff format --diff
 
       - name: Build
-        run: hatch build --clean
+        run: make build
 
       - name: Upload package
+        if: github.event.action == 'published'
         uses: actions/upload-artifact@v4
         with:
           name: Packages
