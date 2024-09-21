@@ -24,13 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.11"
-
-      - name: Setup Hatch
-        run: pipx install hatch
+          enable-cache: true
 
       - name: Configure version
         if: github.event.action == 'published'

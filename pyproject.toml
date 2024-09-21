@@ -1,13 +1,9 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "structlog-gcp"
 description = "A structlog set of processors to output as Google Cloud Logging format"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "MIT"
+license =  { file = "LICENSE" }
 keywords = []
 authors = [
   { name = "Jonathan Ballet", email = "jon@multani.info" },
@@ -31,19 +27,21 @@ Documentation = "https://github.com/multani/structlog-gcp#readme"
 Issues = "https://github.com/multani/structlog-gcp/issues"
 Source = "https://github.com/multani/structlog-gcp"
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [tool.hatch.version]
 path = "structlog_gcp/__about__.py"
 
-[tool.hatch.envs.default]
-dependencies = [
-  "ruff",
-  "mypy",
-  "pytest",
-  "pytest-cov",
+[tool.uv]
+dev-dependencies = [
+    "build[uv]>=1.2.2",
+    "mypy>=1.11.2",
+    "pytest>=8.3.3",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.6.6",
 ]
-
-[tool.hatch.envs.default.scripts]
-test = "pytest"
 
 [tool.pytest.ini_options]
 addopts = [
