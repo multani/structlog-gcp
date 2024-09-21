@@ -34,10 +34,10 @@ jobs:
         run: ./.github/set-version
 
       - name: Test
-        run: uv run pytest --color=yes
+        run: make test
 
       - name: mypy
-        run: uv run mypy
+        run: make mypy
 
       - name: lint
         run: uv run ruff check
@@ -46,7 +46,7 @@ jobs:
         run: uv run ruff format --diff
 
       - name: Build
-        run: uv build --clean
+        run: make build
 
       - name: Upload package
         uses: actions/upload-artifact@v4
