@@ -1,6 +1,5 @@
 import datetime
 import json
-from typing import Callable
 from unittest.mock import patch
 
 import structlog
@@ -8,7 +7,7 @@ from structlog.typing import WrappedLogger
 
 import structlog_gcp
 
-T_stdout = Callable[[], str]
+from .conftest import T_stdout
 
 
 def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
