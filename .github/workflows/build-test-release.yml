@@ -1,4 +1,4 @@
-name: Build & test
+name: Test & release
 
 on:
   push:
@@ -16,8 +16,51 @@ on:
   workflow_dispatch:
 
 jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install Python
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Test
+        run: make test
+
+      - name: mypy
+        run: make mypy
+
+      - name: lint
+        run: uv run ruff check
+
+      - name: format
+        run: uv run ruff format --diff
+
+      # Just test the build works, we'll upload the one in the next job
+      # instead, if needed.
+      - name: Build
+        run: make build
+
   build:
-    name: Build & verify package
+    name: Build package
+    needs: check
+    if: github.event.action == 'published'
     runs-on: ubuntu-latest
 
     steps:
@@ -33,33 +76,19 @@ jobs:
         if: github.event.action == 'published'
         run: ./.github/set-version
 
-      - name: Test
-        run: make test
-
-      - name: mypy
-        run: make mypy
-
-      - name: lint
-        run: uv run ruff check
-
-      - name: format
-        run: uv run ruff format --diff
-
       - name: Build
         run: make build
 
       - name: Upload package
-        if: github.event.action == 'published'
         uses: actions/upload-artifact@v4
         with:
           name: Packages
           path: dist/*
 
-  release:
-    name: Publish
-    runs-on: ubuntu-latest
-    if: github.event.action == 'published'
+  publish:
+    name: Publish package
     needs: build
+    runs-on: ubuntu-latest
     environment: pypi-release
 
     permissions:
