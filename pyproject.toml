@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "structlog-gcp"
-description = 'A structlog set of processors to output as Google Cloud Logging format'
+description = "A structlog set of processors to output as Google Cloud Logging format"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
@@ -15,9 +15,9 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
@@ -36,9 +36,7 @@ path = "structlog_gcp/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
-  "black",
   "ruff",
-  "isort",
   "mypy",
   "pytest",
   "pytest-cov",
@@ -67,20 +65,9 @@ omit = [
   "structlog_gcp/__about__.py",
 ]
 
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
-]
-
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 strict = true
+files = ["structlog_gcp", "tests"]
 
-[tool.ruff]
-ignore = [
-  "E501",
-]
+[tool.ruff.lint]
+extend-select = ["I"]
