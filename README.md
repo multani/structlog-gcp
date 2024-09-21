@@ -60,6 +60,14 @@ if not converted:
     logger.critical("This is not supposed to happen", converted=converted)
 ```
 
+The `structlog_gcp.build_processors()` function constructs structlog processors to:
+
+* Output logs as Google Cloud Logging format using the default Python JSON serializer.
+* Carry context variables across loggers (see [structlog: Context Variables](https://www.structlog.org/en/stable/contextvars.html))
+
+For more advanced usage, see [Advanced Configuration][#advanced-configuration]
+
+
 ### Errors
 
 Errors are automatically reported to the [Google Error Reporting service](https://cloud.google.com/error-reporting/).
@@ -80,6 +88,49 @@ You can configure the service name and the version used during the report with 2
   )
   structlog.configure(processors=processors)
   ```
+
+### Advanced Configuration
+
+If you need to have more control over the processors configured by the library, you can use the `structlog_gcp.build_gcp_processors()` builder function.
+
+This function only configures the Google Cloud Logging-specific processors and omits all the rest.
+
+In particular, you can use this function:
+
+* If you want to have more control over the processors to be configured in structlog. You can prepend or append other processors around the Google-specific ones.
+* If you want to serialize using another JSON serializer or with specific options.
+
+For instance:
+
+
+```python
+import orjson
+import structlog
+from structlog.processors import JSONRenderer
+
+import structlog_gcp
+
+
+def add_open_telemetry_spans(...):
+    # Cf. https://www.structlog.org/en/stable/frameworks.html#opentelemetry
+    ...
+
+gcp_processors = structlog_gcp.build_gcp_processors()
+
+# Fine-tune processors
+processors = [add_open_telemetry_spans]
+processors.extend(gcp_processors)
+processors.append(JSONRenderer(serializer=orjson.dumps))
+
+structlog.configure(processors=processors)
+```
+
+> [!IMPORTANT]
+>
+> `structlog_gcp.build_gcp_processors()` **doesn't** configure a renderer and
+> you must supply a JSON renderer of your choice for the library to work
+> correctly.
+
 
 ## Examples
 
