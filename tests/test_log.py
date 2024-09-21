@@ -22,7 +22,7 @@ def test_normal(stdout, logger):
         "severity": "INFO",
         "time": "2023-04-01T08:00:00.000000Z",
     }
-    assert expected == msg
+    assert msg == expected
 
 
 def test_error(stdout, logger):
@@ -57,7 +57,7 @@ def test_error(stdout, logger):
         "stack_trace": "oh noes\nTraceback blabla",
         "time": "2023-04-01T08:00:00.000000Z",
     }
-    assert expected == msg
+    assert msg == expected
 
 
 def test_service_context_default(stdout, logger):
@@ -144,4 +144,4 @@ def test_extra_labels(stdout, logger):
         "test4": {"foo": "bar"},
         "test5": {"date": "datetime.date(2023, 1, 1)"},
     }
-    assert expected == msg
+    assert msg == expected

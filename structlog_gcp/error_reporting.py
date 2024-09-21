@@ -1,41 +1,13 @@
 import os
 
-import structlog
+import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
 from .types import CLOUD_LOGGING_KEY, ERROR_EVENT_TYPE, SOURCE_LOCATION_KEY
 
 
-class ServiceContext:
-    def __init__(self, service: str | None = None, version: str | None = None) -> None:
-        # https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically
-        if service is None:
-            service = os.environ.get("K_SERVICE", "unknown service")
-
-        if version is None:
-            version = os.environ.get("K_REVISION", "unknown version")
-
-        self.service_context = {"service": service, "version": version}
-
-    def setup(self) -> list[Processor]:
-        return [self]
-
-    def __call__(
-        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
-    ) -> EventDict:
-        """Add a service context in which an error has occurred.
-
-        This is part of the Error Reporting API, so it's only added when an error happens.
-        """
-
-        event_type = event_dict[CLOUD_LOGGING_KEY].get("@type")
-        if event_type != ERROR_EVENT_TYPE:
-            return event_dict
-
-        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
-        event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self.service_context
-
-        return event_dict
+def setup_exceptions(log_level: str = "CRITICAL") -> list[Processor]:
+    return [structlog.processors.format_exc_info, ReportException(log_level)]
 
 
 class ReportException:
@@ -46,9 +18,6 @@ class ReportException:
 
     def __init__(self, log_level: str = "CRITICAL") -> None:
         self.log_level = log_level
-
-    def setup(self) -> list[Processor]:
-        return [structlog.processors.format_exc_info, self]
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -80,19 +49,6 @@ class ReportError:
     def __init__(self, severities: list[str]) -> None:
         self.severities = severities
 
-    def setup(self) -> list[Processor]:
-        return [self]
-
-    def _build_service_context(self) -> dict[str, str]:
-        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
-        service_context = {
-            # https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically
-            "service": os.environ.get("K_SERVICE", "unknown service"),
-            "version": os.environ.get("K_REVISION", "unknown version"),
-        }
-
-        return service_context
-
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
     ) -> EventDict:
@@ -108,6 +64,37 @@ class ReportError:
 
         event_dict[CLOUD_LOGGING_KEY]["@type"] = ERROR_EVENT_TYPE
         event_dict[CLOUD_LOGGING_KEY]["context"] = error_context
-        event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self._build_service_context()
+
+        # "serviceContext" should be added by the ServiceContext processor.
+        # event_dict[CLOUD_LOGGING_KEY]["serviceContext"]
+
+        return event_dict
+
+
+class ServiceContext:
+    def __init__(self, service: str | None = None, version: str | None = None) -> None:
+        # https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically
+        if service is None:
+            service = os.environ.get("K_SERVICE", "unknown service")
+
+        if version is None:
+            version = os.environ.get("K_REVISION", "unknown version")
+
+        self.service_context = {"service": service, "version": version}
+
+    def __call__(
+        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
+    ) -> EventDict:
+        """Add a service context in which an error has occurred.
+
+        This is part of the Error Reporting API, so it's only added when an error happens.
+        """
+
+        event_type = event_dict[CLOUD_LOGGING_KEY].get("@type")
+        if event_type != ERROR_EVENT_TYPE:
+            return event_dict
+
+        # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ServiceContext
+        event_dict[CLOUD_LOGGING_KEY]["serviceContext"] = self.service_context
 
         return event_dict
