@@ -40,16 +40,13 @@ jobs:
         run: hatch run pytest --color=yes
 
       - name: mypy
-        run: hatch run mypy structlog_gcp
+        run: hatch run mypy
 
-      - name: ruff
-        run: hatch run ruff check structlog_gcp
+      - name: lint
+        run: hatch run ruff check
 
-      - name: black
-        run: hatch run black --check --diff structlog_gcp
-
-      - name: isort
-        run: hatch run isort --check --diff structlog_gcp
+      - name: format
+        run: hatch run ruff format --diff
 
       - name: Build
         run: hatch build --clean
