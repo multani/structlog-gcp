@@ -1,24 +1,13 @@
-DIRS = structlog_gcp
-
-all: lint fmt
-
-.PHONY: lint
-lint:
-	$(MAKE) ruff
-	$(MAKE) mypy
-
-.PHONY: ruff
-ruff:
-	hatch run ruff check $(DIRS)
+all: fmt mypy test
 
 .PHONY: mypy
 mypy:
-	hatch run mypy $(DIRS)
+	hatch run mypy
 
 .PHONY: fmt
 fmt:
-	hatch run black $(DIRS)
-	hatch run isort $(DIRS)
+	hatch run ruff format
+	hatch run ruff check --fix
 
 .PHONY: test
 test:

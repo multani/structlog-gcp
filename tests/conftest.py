@@ -1,7 +1,10 @@
+from typing import Callable, Generator
 from unittest.mock import patch
 
 import pytest
 import structlog
+from _pytest.capture import CaptureFixture
+from structlog.typing import WrappedLogger
 
 import structlog_gcp
 
@@ -9,7 +12,7 @@ from . import fakes
 
 
 @pytest.fixture
-def mock_logger_env():
+def mock_logger_env() -> Generator[None, None, None]:
     with (
         patch(
             "structlog.processors.CallsiteParameterAdder",
@@ -24,7 +27,7 @@ def mock_logger_env():
 
 
 @pytest.fixture
-def logger(mock_logger_env):
+def logger(mock_logger_env: None) -> Generator[WrappedLogger, None, None]:
     """Setup a logger for testing and return it"""
 
     structlog.reset_defaults()
@@ -38,10 +41,10 @@ def logger(mock_logger_env):
 
 
 @pytest.fixture
-def stdout(capsys):
-    def read():
+def stdout(capsys: CaptureFixture[str]) -> Callable[[], str]:
+    def read() -> str:
         output = capsys.readouterr()
         assert "" == output.err
         return output.out
 
-    yield read
+    return read

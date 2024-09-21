@@ -1,13 +1,17 @@
 import datetime
 import json
+from typing import Callable
 from unittest.mock import patch
 
 import structlog
+from structlog.typing import WrappedLogger
 
 import structlog_gcp
 
+T_stdout = Callable[[], str]
 
-def test_normal(stdout, logger):
+
+def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
     logger.info("test")
 
     msg = json.loads(stdout())
@@ -25,7 +29,7 @@ def test_normal(stdout, logger):
     assert msg == expected
 
 
-def test_error(stdout, logger):
+def test_error(stdout: T_stdout, logger: WrappedLogger) -> None:
     try:
         1 / 0
     except ZeroDivisionError:
@@ -60,7 +64,7 @@ def test_error(stdout, logger):
     assert msg == expected
 
 
-def test_service_context_default(stdout, logger):
+def test_service_context_default(stdout: T_stdout, logger: WrappedLogger) -> None:
     try:
         1 / 0
     except ZeroDivisionError:
@@ -75,7 +79,7 @@ def test_service_context_default(stdout, logger):
 
 
 @patch.dict("os.environ", {"K_SERVICE": "test-service", "K_REVISION": "test-version"})
-def test_service_context_envvar(stdout, mock_logger_env):
+def test_service_context_envvar(stdout: T_stdout, mock_logger_env: None) -> None:
     processors = structlog_gcp.build_processors()
     structlog.configure(processors=processors)
     logger = structlog.get_logger()
@@ -93,7 +97,7 @@ def test_service_context_envvar(stdout, mock_logger_env):
     }
 
 
-def test_service_context_custom(stdout, mock_logger_env):
+def test_service_context_custom(stdout: T_stdout, mock_logger_env: None) -> None:
     processors = structlog_gcp.build_processors(
         service="my-service",
         version="deadbeef",
@@ -114,7 +118,7 @@ def test_service_context_custom(stdout, mock_logger_env):
     }
 
 
-def test_extra_labels(stdout, logger):
+def test_extra_labels(stdout: T_stdout, logger: WrappedLogger) -> None:
     logger.info(
         "test",
         test1="test1",
@@ -135,7 +139,6 @@ def test_extra_labels(stdout, logger):
         "severity": "INFO",
         "time": "2023-04-01T08:00:00.000000Z",
         "message": "test",
-
         # This should be parsed automatically by Cloud Logging into dedicated keys and saved into a JSON payload.
         # See: https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
         "test1": "test1",
