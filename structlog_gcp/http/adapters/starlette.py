@@ -1,9 +1,6 @@
 import time
 from types import TracebackType
-from typing import (
-    Self,
-    Type,
-)
+from typing import Type
 
 from starlette.requests import Request
 from starlette.responses import Response
@@ -16,7 +13,7 @@ class RequestAdapter:
         self.request = request
         self.start_time = time.perf_counter_ns()
 
-    async def __aenter__(self) -> Self:
+    async def __aenter__(self) -> "RequestAdapter":
         return self
 
     async def __aexit__(
