@@ -73,6 +73,7 @@ jobs:
           enable-cache: true
 
       - name: Configure version
+        if: github.event.action == 'published'
         run: ./.github/set-version
 
       - name: Build
