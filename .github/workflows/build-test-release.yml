@@ -34,19 +34,19 @@ jobs:
         run: ./.github/set-version
 
       - name: Test
-        run: hatch run pytest --color=yes
+        run: uv run pytest --color=yes
 
       - name: mypy
-        run: hatch run mypy
+        run: uv run mypy
 
       - name: lint
-        run: hatch run ruff check
+        run: uv run ruff check
 
       - name: format
-        run: hatch run ruff format --diff
+        run: uv run ruff format --diff
 
       - name: Build
-        run: hatch build --clean
+        run: uv build --clean
 
       - name: Upload package
         uses: actions/upload-artifact@v4
