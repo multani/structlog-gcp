@@ -150,12 +150,39 @@ def test_extra_labels(stdout: T_stdout, logger: WrappedLogger) -> None:
     assert msg == expected
 
 
+def test_contextvars_supported(stdout: T_stdout, logger: WrappedLogger) -> None:
+    structlog.contextvars.bind_contextvars(
+        request_id="1234",
+    )
+
+    logger.info("test")
+    msg = json.loads(stdout())
+
+    expected = {
+        "logging.googleapis.com/sourceLocation": {
+            "file": "/app/test.py",
+            "function": "test:test123",
+            "line": "42",
+        },
+        "message": "test",
+        "request_id": "1234",
+        "severity": "INFO",
+        "time": "2023-04-01T08:00:00.000000Z",
+    }
+    assert msg == expected
+
+
 def test_core_processors_only(stdout: T_stdout, mock_logger_env: None) -> None:
     processors = structlog_gcp.build_gcp_processors()
     processors.append(structlog.processors.KeyValueRenderer())
 
     structlog.configure(processors=processors)
     logger = structlog.get_logger()
+
+    # This will not be logged as the contextvars processor is not configured in the "core" processors.
+    structlog.contextvars.bind_contextvars(
+        request_id="1234",
+    )
 
     logger.info("test")
     msg = stdout().strip()
