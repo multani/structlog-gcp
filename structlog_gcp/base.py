@@ -2,7 +2,7 @@ import structlog.contextvars
 import structlog.processors
 from structlog.typing import Processor
 
-from . import error_reporting, processors
+from . import error_reporting, http, processors
 
 
 def build_processors(
@@ -56,6 +56,8 @@ def build_gcp_processors(
 
     procs.extend(processors.setup_log_severity())
     procs.extend(processors.setup_code_location())
+
+    procs.append(http.request_processor)
 
     # Errors: log exceptions
     procs.extend(error_reporting.setup_exceptions())

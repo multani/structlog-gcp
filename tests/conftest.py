@@ -40,8 +40,11 @@ def logger(mock_logger_env: None) -> Generator[WrappedLogger, None, None]:
     structlog.reset_defaults()
 
 
+T_stdout = Callable[[], str]
+
+
 @pytest.fixture
-def stdout(capsys: CaptureFixture[str]) -> Callable[[], str]:
+def stdout(capsys: CaptureFixture[str]) -> T_stdout:
     def read() -> str:
         output = capsys.readouterr()
         assert "" == output.err
