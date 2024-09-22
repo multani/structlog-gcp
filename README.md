@@ -65,7 +65,7 @@ The `structlog_gcp.build_processors()` function constructs structlog processors 
 * Output logs as Google Cloud Logging format using the default Python JSON serializer.
 * Carry context variables across loggers (see [structlog: Context Variables](https://www.structlog.org/en/stable/contextvars.html))
 
-For more advanced usage, see [Advanced Configuration][#advanced-configuration]
+For more advanced usage, see [Advanced Configuration](#advanced-configuration)
 
 
 ### Errors
