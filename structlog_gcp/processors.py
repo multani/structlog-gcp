@@ -6,11 +6,7 @@
 import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
-from .types import CLOUD_LOGGING_KEY, SOURCE_LOCATION_KEY
-
-
-def setup_log_severity() -> list[Processor]:
-    return [structlog.processors.add_log_level, LogSeverity()]
+from .constants import CLOUD_LOGGING_KEY, SEVERITY_MAPPING, SOURCE_LOCATION_KEY
 
 
 def setup_code_location() -> list[Processor]:
@@ -77,27 +73,14 @@ class LogSeverity:
 
     def __init__(self) -> None:
         self.default = "notset"
-
-        # From Python's logging level to Google level
-        self.mapping = {
-            "notset": "DEFAULT",  # The log entry has no assigned severity level.
-            "debug": "DEBUG",  # Debug or trace information.
-            "info": "INFO",  # Routine information, such as ongoing status or performance.
-            # "notice": "NOTICE", # Normal but significant events, such as start up, shut down, or a configuration change.
-            "warn": "WARNING",  # Warning events might cause problems.
-            "warning": "WARNING",  # Warning events might cause problems.
-            "error": "ERROR",  # Error events are likely to cause problems.
-            "critical": "CRITICAL",  # Critical events cause more severe problems or outages.
-            # "alert": "ALERT", # A person must take an action immediately.
-            # "emergency": "EMERGENCY", #	One or more systems are unusable.
-        }
+        self.mapping = SEVERITY_MAPPING.copy()
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
     ) -> EventDict:
         """Format a Python log level value as a GCP log severity."""
 
-        log_level = event_dict.pop("level")
+        log_level = method_name
         severity = self.mapping.get(log_level, self.default)
 
         event_dict[CLOUD_LOGGING_KEY]["severity"] = severity

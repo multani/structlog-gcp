@@ -3,11 +3,11 @@ import os
 import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
-from .types import CLOUD_LOGGING_KEY, ERROR_EVENT_TYPE, SOURCE_LOCATION_KEY
+from .constants import CLOUD_LOGGING_KEY, ERROR_EVENT_TYPE, SOURCE_LOCATION_KEY
 
 
-def setup_exceptions(log_level: str = "CRITICAL") -> list[Processor]:
-    return [structlog.processors.format_exc_info, ReportException(log_level)]
+def setup_exceptions() -> list[Processor]:
+    return [structlog.processors.format_exc_info, ReportException()]
 
 
 class ReportException:
@@ -16,8 +16,8 @@ class ReportException:
     # https://cloud.google.com/error-reporting/reference/rest/v1beta1/projects.events/report
     # https://cloud.google.com/error-reporting/docs/formatting-error-messages#log-entry-examples
 
-    def __init__(self, log_level: str = "CRITICAL") -> None:
-        self.log_level = log_level
+    def __init__(self) -> None:
+        pass
 
     def __call__(
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
@@ -27,7 +27,6 @@ class ReportException:
             return event_dict
 
         event_dict[CLOUD_LOGGING_KEY]["@type"] = ERROR_EVENT_TYPE
-        event_dict[CLOUD_LOGGING_KEY]["severity"] = self.log_level
 
         # https://cloud.google.com/error-reporting/docs/formatting-error-messages
         message = event_dict[CLOUD_LOGGING_KEY]["message"]
@@ -53,8 +52,9 @@ class ReportError:
         self, logger: WrappedLogger, method_name: str, event_dict: EventDict
     ) -> EventDict:
         severity = event_dict[CLOUD_LOGGING_KEY]["severity"]
+        has_strack_trace = "stack_trace" in event_dict[CLOUD_LOGGING_KEY]
 
-        if severity not in self.severities:
+        if severity not in self.severities and not has_strack_trace:
             return event_dict
 
         # https://cloud.google.com/error-reporting/reference/rest/v1beta1/ErrorContext
