@@ -31,10 +31,12 @@ def logger(mock_logger_env: None) -> Generator[WrappedLogger, None, None]:
     """Setup a logger for testing and return it"""
 
     structlog.reset_defaults()
+    structlog.contextvars.clear_contextvars()
 
     processors = structlog_gcp.build_processors()
     structlog.configure(processors=processors)
     logger = structlog.get_logger()
+
     yield logger
 
     structlog.reset_defaults()

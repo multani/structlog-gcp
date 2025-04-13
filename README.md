@@ -58,6 +58,11 @@ except:
 
 if not converted:
     logger.critical("This is not supposed to happen", converted=converted)
+
+try:
+    1 / 0
+except ZeroDivisionError as exc:
+    logger.info("This was known to happen! {exc}")
 ```
 
 The `structlog_gcp.build_processors()` function constructs structlog processors to:
@@ -70,12 +75,66 @@ For more advanced usage, see [Advanced Configuration](#advanced-configuration)
 
 ### Errors
 
-Errors are automatically reported to the [Google Error Reporting service](https://cloud.google.com/error-reporting/).
+
+Errors are automatically reported to the [Google Error Reporting service](https://cloud.google.com/error-reporting/), most of the time.
+
+#### Using `logger.exception`
+
+Using:
+
+```python
+try:
+    1 / 0
+except:
+    logger.exception("oh no")
+```
+
+Will give you:
+
+* The current exception can automatically added into the log event
+* The log level will be `ERROR`
+* The exception will be reported in Error Reporting
+
+##### Using `logger.$LEVEL(..., exception=exc)`
+
+Using:
+
+```python
+try:
+    1 / 0
+except Exception as exc
+    logger.info("oh no", exception=exc)
+```
+Will give you:
+
+* The specified exception will be part of the log event
+* The log level will be `INFO`, or whichever log level you used
+* The exception will be reported in Error Reporting
+
+
+##### Using `logger.$LEVEL(...)`
+
+Not passing any `exception` argument to the logger, as in:
+
+```python
+try:
+    1 / 0
+except Exception as exc
+    logger.warning(f"oh no: {exc}")
+```
+
+Will give you:
+
+* The exception will **not** be part of the log event.
+* The log level will be `WARNING` (or whichever log level you used)
+* AND the exception will **not** be reported in Error Reporting
+
+### Configuration
 
 You can configure the service name and the version used during the report with 2 different ways:
 
-* By default, the library assumes to run with Cloud Function environment
-  variables configured, in particular [the `K_SERVICE` and `K_REVISION` variables](https://cloud.google.com/functions/docs/configuring/env-var#runtime_environment_variables_set_automatically).
+* By default, the library assumes to run with Cloud Run environment
+  variables configured, in particular [the `K_SERVICE` and `K_REVISION` variables](https://cloud.google.com/run/docs/configuring/services/overview-environment-variables#reserved_environment_variables_for_functions).
 * You can also pass the service name and revision at configuration time with:
 
   ```python

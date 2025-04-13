@@ -54,7 +54,7 @@ def build_gcp_processors(
     procs.append(structlog.processors.TimeStamper(fmt="iso"))
     procs.append(processors.init_cloud_logging)
 
-    procs.extend(processors.setup_log_severity())
+    procs.append(processors.LogSeverity())
     procs.extend(processors.setup_code_location())
 
     # Errors: log exceptions

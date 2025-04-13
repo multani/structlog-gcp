@@ -29,7 +29,7 @@ def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
     assert msg == expected
 
 
-def test_error(stdout: T_stdout, logger: WrappedLogger) -> None:
+def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
     try:
         1 / 0
     except ZeroDivisionError:
@@ -56,7 +56,7 @@ def test_error(stdout: T_stdout, logger: WrappedLogger) -> None:
             "version": "unknown version",
         },
         "foo": "bar",
-        "severity": "CRITICAL",
+        "severity": "ERROR",
         "message": "oh noes",
         "stack_trace": "oh noes\nTraceback blabla",
         "time": "2023-04-01T08:00:00.000000Z",
@@ -190,4 +190,59 @@ def test_core_processors_only(stdout: T_stdout, mock_logger_env: None) -> None:
     # No JSON formmating, no contextvars
     expected = "message='test' time='2023-04-01T08:00:00.000000Z' severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
 
+    assert expected == msg
+
+
+def test_exception_different_level(stdout: T_stdout, logger: WrappedLogger) -> None:
+    try:
+        1 / 0
+    except ZeroDivisionError as exc:
+        logger.warning("oh no; anyways", exception=exc)
+
+    msg = json.loads(stdout())
+
+    expected = {
+        "@type": "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent",
+        "context": {
+            "reportLocation": {
+                "file": "/app/test.py",
+                "function": "test:test123",
+                "line": "42",
+            },
+        },
+        "logging.googleapis.com/sourceLocation": {
+            "file": "/app/test.py",
+            "function": "test:test123",
+            "line": "42",
+        },
+        "serviceContext": {
+            "service": "unknown service",
+            "version": "unknown version",
+        },
+        "severity": "WARNING",
+        "message": "oh no; anyways",
+        "stack_trace": "oh no; anyways\ndivision by zero",
+        "time": "2023-04-01T08:00:00.000000Z",
+    }
+    assert msg == expected
+
+
+def test_exception_handled(stdout: T_stdout, logger: WrappedLogger) -> None:
+    try:
+        1 / 0
+    except ZeroDivisionError as exc:
+        logger.info(f"I was expecting that error: {exc}")
+
+    msg = json.loads(stdout())
+
+    expected = {
+        "logging.googleapis.com/sourceLocation": {
+            "file": "/app/test.py",
+            "function": "test:test123",
+            "line": "42",
+        },
+        "severity": "INFO",
+        "message": "I was expecting that error: division by zero",
+        "time": "2023-04-01T08:00:00.000000Z",
+    }
     assert msg == expected
