@@ -1,20 +1,19 @@
 import datetime
-import json
-from typing import Callable
 from unittest.mock import patch
 
 import structlog
+from _pytest.capture import CaptureFixture
 from structlog.typing import WrappedLogger
 
 import structlog_gcp
 
-T_stdout = Callable[[], str]
+from .conftest import T_stdout
 
 
 def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
     logger.info("test")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "logging.googleapis.com/sourceLocation": {
@@ -35,7 +34,7 @@ def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
     except ZeroDivisionError:
         logger.exception("oh noes", foo="bar")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "@type": "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent",
@@ -70,7 +69,7 @@ def test_service_context_default(stdout: T_stdout, logger: WrappedLogger) -> Non
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     assert msg["serviceContext"] == {
         "service": "unknown service",
@@ -89,7 +88,7 @@ def test_service_context_envvar(stdout: T_stdout, mock_logger_env: None) -> None
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     assert msg["serviceContext"] == {
         "service": "test-service",
@@ -110,7 +109,7 @@ def test_service_context_custom(stdout: T_stdout, mock_logger_env: None) -> None
     except ZeroDivisionError:
         logger.exception("oh noes")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     assert msg["serviceContext"] == {
         "service": "my-service",
@@ -128,7 +127,7 @@ def test_extra_labels(stdout: T_stdout, logger: WrappedLogger) -> None:
         test5={"date": datetime.date(2023, 1, 1)},
     )
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "logging.googleapis.com/sourceLocation": {
@@ -156,7 +155,7 @@ def test_contextvars_supported(stdout: T_stdout, logger: WrappedLogger) -> None:
     )
 
     logger.info("test")
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "logging.googleapis.com/sourceLocation": {
@@ -172,7 +171,9 @@ def test_contextvars_supported(stdout: T_stdout, logger: WrappedLogger) -> None:
     assert msg == expected
 
 
-def test_core_processors_only(stdout: T_stdout, mock_logger_env: None) -> None:
+def test_core_processors_only(
+    capsys: CaptureFixture[str], mock_logger_env: None
+) -> None:
     processors = structlog_gcp.build_gcp_processors()
     processors.append(structlog.processors.KeyValueRenderer())
 
@@ -185,7 +186,10 @@ def test_core_processors_only(stdout: T_stdout, mock_logger_env: None) -> None:
     )
 
     logger.info("test")
-    msg = stdout().strip()
+
+    output = capsys.readouterr()
+    assert "" == output.err
+    msg = output.out.strip()
 
     # No JSON formmating, no contextvars
     expected = "message='test' time='2023-04-01T08:00:00.000000Z' severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
@@ -199,7 +203,7 @@ def test_exception_different_level(stdout: T_stdout, logger: WrappedLogger) -> N
     except ZeroDivisionError as exc:
         logger.warning("oh no; anyways", exception=exc)
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "@type": "type.googleapis.com/google.devtools.clouderrorreporting.v1beta1.ReportedErrorEvent",
@@ -233,7 +237,7 @@ def test_exception_handled(stdout: T_stdout, logger: WrappedLogger) -> None:
     except ZeroDivisionError as exc:
         logger.info(f"I was expecting that error: {exc}")
 
-    msg = json.loads(stdout())
+    msg = next(stdout)
 
     expected = {
         "logging.googleapis.com/sourceLocation": {

@@ -1,4 +1,5 @@
-from typing import Callable, Generator
+import json
+from typing import Any, Generator, Iterator
 from unittest.mock import patch
 
 import pytest
@@ -9,6 +10,9 @@ from structlog.typing import WrappedLogger
 import structlog_gcp
 
 from . import fakes
+
+Event = dict[str, Any]
+T_stdout = Iterator[Event]
 
 
 @pytest.fixture
@@ -43,10 +47,12 @@ def logger(mock_logger_env: None) -> Generator[WrappedLogger, None, None]:
 
 
 @pytest.fixture
-def stdout(capsys: CaptureFixture[str]) -> Callable[[], str]:
-    def read() -> str:
+def stdout(capsys: CaptureFixture[str]) -> T_stdout:
+    def read() -> Iterator[Event]:
         output = capsys.readouterr()
         assert "" == output.err
-        return output.out
 
-    return read
+        for line in output.out.split("\n"):
+            yield json.loads(line)
+
+    return read()
