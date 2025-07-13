@@ -29,9 +29,7 @@ class ReportException:
         event_dict[CLOUD_LOGGING_KEY]["@type"] = ERROR_EVENT_TYPE
 
         # https://cloud.google.com/error-reporting/docs/formatting-error-messages
-        message = event_dict[CLOUD_LOGGING_KEY]["message"]
-        error_message = f"{message}\n{exception}"
-        event_dict[CLOUD_LOGGING_KEY]["stack_trace"] = error_message
+        event_dict[CLOUD_LOGGING_KEY]["stack_trace"] = exception
 
         return event_dict
 

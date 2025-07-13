@@ -57,7 +57,7 @@ def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
         "foo": "bar",
         "severity": "ERROR",
         "message": "oh noes",
-        "stack_trace": "oh noes\nTraceback blabla",
+        "stack_trace": "Traceback (most recent call last):\n...\nZeroDivisionError: division by zero",
         "time": "2023-04-01T08:00:00.000000Z",
     }
     assert msg == expected
@@ -191,7 +191,7 @@ def test_core_processors_only(
     assert "" == output.err
     msg = output.out.strip()
 
-    # No JSON formmating, no contextvars
+    # No JSON formatting, no contextvars
     expected = "message='test' time='2023-04-01T08:00:00.000000Z' severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
 
     assert expected == msg
@@ -225,7 +225,7 @@ def test_exception_different_level(stdout: T_stdout, logger: WrappedLogger) -> N
         },
         "severity": "WARNING",
         "message": "oh no; anyways",
-        "stack_trace": "oh no; anyways\ndivision by zero",
+        "stack_trace": "ZeroDivisionError('division by zero')",
         "time": "2023-04-01T08:00:00.000000Z",
     }
     assert msg == expected
