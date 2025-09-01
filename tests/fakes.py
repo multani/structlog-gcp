@@ -22,8 +22,8 @@ class CallsiteParameterAdder:
 
 
 def time_nanoseconds() -> tuple[int, int]:
-    seconds = 1680379200 # 2023-04-01T08:00:00Z
-    nanoseconds = 1234567899 # some nanoseconds
+    seconds = 1680379200  # 2023-04-01T08:00:00Z
+    nanoseconds = 1234567899  # some nanoseconds
     return (seconds, nanoseconds)
 
 
