@@ -21,15 +21,10 @@ class CallsiteParameterAdder:
         return event_dict
 
 
-class TimeStamper:
-    def __init__(self, fmt: str) -> None:
-        pass
-
-    def __call__(
-        self, logger: WrappedLogger, method_name: str, event_dict: EventDict
-    ) -> EventDict:
-        event_dict["timestamp"] = "2023-04-01T08:00:00.000000Z"
-        return event_dict
+def time_nanoseconds() -> tuple[int, int]:
+    seconds = 1680379200 # 2023-04-01T08:00:00Z
+    nanoseconds = 1234567899 # some nanoseconds
+    return (seconds, nanoseconds)
 
 
 def format_exc_info(
