@@ -81,7 +81,7 @@ jobs:
         run: make build
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Packages
           path: dist/*
@@ -97,7 +97,7 @@ jobs:
 
     steps:
       - name: Download package
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: Packages
           path: dist
