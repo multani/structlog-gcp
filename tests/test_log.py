@@ -23,7 +23,10 @@ def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
         },
         "message": "test",
         "severity": "INFO",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
     }
     assert msg == expected
 
@@ -58,7 +61,10 @@ def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
         "severity": "ERROR",
         "message": "oh noes",
         "stack_trace": "Traceback (most recent call last):\n...\nZeroDivisionError: division by zero",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
     }
     assert msg == expected
 
@@ -136,7 +142,10 @@ def test_extra_labels(stdout: T_stdout, logger: WrappedLogger) -> None:
             "line": "42",
         },
         "severity": "INFO",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
         "message": "test",
         # This should be parsed automatically by Cloud Logging into dedicated keys and saved into a JSON payload.
         # See: https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
@@ -166,7 +175,10 @@ def test_contextvars_supported(stdout: T_stdout, logger: WrappedLogger) -> None:
         "message": "test",
         "request_id": "1234",
         "severity": "INFO",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
     }
     assert msg == expected
 
@@ -192,7 +204,7 @@ def test_core_processors_only(
     msg = output.out.strip()
 
     # No JSON formatting, no contextvars
-    expected = "message='test' time='2023-04-01T08:00:00.000000Z' severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
+    expected = "message='test' time={'seconds': 1680379200, 'nanos': 1234567899} severity='INFO' logging.googleapis.com/sourceLocation={'file': '/app/test.py', 'line': '42', 'function': 'test:test123'}"
 
     assert expected == msg
 
@@ -226,7 +238,10 @@ def test_exception_different_level(stdout: T_stdout, logger: WrappedLogger) -> N
         "severity": "WARNING",
         "message": "oh no; anyways",
         "stack_trace": "ZeroDivisionError('division by zero')",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
     }
     assert msg == expected
 
@@ -247,6 +262,9 @@ def test_exception_handled(stdout: T_stdout, logger: WrappedLogger) -> None:
         },
         "severity": "INFO",
         "message": "I was expecting that error: division by zero",
-        "time": "2023-04-01T08:00:00.000000Z",
+        "time": {
+            "nanos": 1234567899,
+            "seconds": 1680379200,
+        },
     }
     assert msg == expected
