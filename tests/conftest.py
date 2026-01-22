@@ -22,7 +22,10 @@ def mock_logger_env() -> Generator[None, None, None]:
             "structlog.processors.CallsiteParameterAdder",
             side_effect=fakes.CallsiteParameterAdder,
         ),
-        patch("structlog.processors.TimeStamper", side_effect=fakes.TimeStamper),
+        patch(
+            "structlog_gcp.processors.time_nanoseconds",
+            side_effect=fakes.time_nanoseconds,
+        ),
         patch(
             "structlog.processors.format_exc_info", side_effect=fakes.format_exc_info
         ),
