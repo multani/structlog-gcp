@@ -6,6 +6,8 @@ from _pytest.capture import CaptureFixture
 from structlog.typing import WrappedLogger
 
 import structlog_gcp
+from structlog_gcp.constants import CLOUD_LOGGING_KEY
+from structlog_gcp.processors import LogSeverity
 
 from .conftest import T_stdout
 
@@ -61,6 +63,16 @@ def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
         "time": "2023-04-01T08:00:00.000000Z",
     }
     assert msg == expected
+
+
+def test_exception_method_maps_to_error_severity() -> None:
+    """`structlog.stdlib.BoundLogger.exception()` logs with the "exception"
+    method name, unlike the default ``BoundLogger`` (which uses "error"). It
+    must still map to ERROR severity.
+    """
+    event_dict = LogSeverity()(None, "exception", {CLOUD_LOGGING_KEY: {}})
+
+    assert event_dict[CLOUD_LOGGING_KEY]["severity"] == "ERROR"
 
 
 def test_service_context_default(stdout: T_stdout, logger: WrappedLogger) -> None:

@@ -16,6 +16,7 @@ SEVERITY_MAPPING = {
     "warn": "WARNING",  # Warning events might cause problems.
     "warning": "WARNING",  # Warning events might cause problems.
     "error": "ERROR",  # Error events are likely to cause problems.
+    "exception": "ERROR",  # structlog.stdlib.BoundLogger.exception() method name.
     "critical": "CRITICAL",  # Critical events cause more severe problems or outages.
     # "alert": "ALERT", # A person must take an action immediately.
     # "emergency": "EMERGENCY", #	One or more systems are unusable.
