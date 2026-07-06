@@ -31,14 +31,22 @@ def mock_logger_env() -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def logger(mock_logger_env: None) -> Generator[WrappedLogger, None, None]:
-    """Setup a logger for testing and return it"""
+def logger(
+    request: pytest.FixtureRequest, mock_logger_env: None
+) -> Generator[WrappedLogger, None, None]:
+    """Setup a logger for testing and return it.
+
+    Indirectly parametrize with a ``wrapper_class`` (e.g.
+    ``structlog.stdlib.BoundLogger``) to bind a non-default logger.
+    """
 
     structlog.reset_defaults()
     structlog.contextvars.clear_contextvars()
 
     processors = structlog_gcp.build_processors()
-    structlog.configure(processors=processors)
+    structlog.configure(
+        processors=processors, wrapper_class=getattr(request, "param", None)
+    )
     logger = structlog.get_logger()
 
     yield logger
