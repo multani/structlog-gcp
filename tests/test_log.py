@@ -1,6 +1,7 @@
 import datetime
 from unittest.mock import patch
 
+import pytest
 import structlog
 from _pytest.capture import CaptureFixture
 from structlog.typing import WrappedLogger
@@ -28,7 +29,15 @@ def test_normal(stdout: T_stdout, logger: WrappedLogger) -> None:
     assert msg == expected
 
 
+@pytest.mark.parametrize(
+    "logger",
+    [None, structlog.stdlib.BoundLogger],
+    indirect=True,
+    ids=["default", "stdlib"],
+)
 def test_exception(stdout: T_stdout, logger: WrappedLogger) -> None:
+    # The stdlib logger's exception() logs with the "exception" method name
+    # (the default one uses "error"); both must map to ERROR severity.
     try:
         1 / 0
     except ZeroDivisionError:
