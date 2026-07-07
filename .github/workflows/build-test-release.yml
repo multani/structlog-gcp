@@ -28,13 +28,14 @@ jobs:
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.0
         with:
           enable-cache: true
 
@@ -69,7 +70,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v8.2.0
+        uses: astral-sh/setup-uv@v8.3.0
         with:
           enable-cache: true
 
