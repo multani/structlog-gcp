@@ -3,10 +3,43 @@
 # https://cloud.google.com/logging/docs/structured-logging#special-payload-fields
 
 
+import time
+
 import structlog.processors
 from structlog.typing import EventDict, Processor, WrappedLogger
 
 from .constants import CLOUD_LOGGING_KEY, SEVERITY_MAPPING, SOURCE_LOCATION_KEY
+
+
+def time_nanoseconds() -> tuple[int, int]:
+    """Return the current time as seconds and nanoseconds since the epoch."""
+
+    now_ns = time.time_ns()
+
+    seconds = now_ns // 1_000_000_000
+    nanoseconds = now_ns % 1_000_000_000
+
+    return seconds, nanoseconds
+
+
+def timestamper(
+    logger: WrappedLogger, method_name: str, event_dict: EventDict
+) -> EventDict:
+    """Add a timestamp to the event, with nanosecond precision."""
+
+    seconds, nanoseconds = time_nanoseconds()
+
+    # From https://cloud.google.com/logging/docs/agent/logging/configuration#timestamp-processing
+    # [Google Cloud Logging can] search for a timestamp field that is a JSON
+    # object that includes the `seconds` and `nanos` fields, representing,
+    # respectively, a signed number of seconds from the UTC epoch and a
+    # nonnegative number of fractional seconds
+    event_dict["timestamp"] = {
+        "seconds": seconds,
+        "nanos": nanoseconds,
+    }
+
+    return event_dict
 
 
 def setup_code_location() -> list[Processor]:
