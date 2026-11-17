@@ -51,7 +51,7 @@ def build_gcp_processors(
     procs: list[Processor] = []
 
     # Add a timestamp in ISO 8601 format.
-    procs.append(structlog.processors.TimeStamper(fmt="iso"))
+    procs.append(processors.timestamper)
     procs.append(processors.init_cloud_logging)
 
     procs.append(processors.LogSeverity())
